@@ -32,6 +32,7 @@ BOOTROMS_DIR ?= $(BIN)/BootROMs
 # Set tools
 
 CC := clang
+CXX := clang++
 ifeq ($(PLATFORM),windows32)
 # To force use of the Unix version instead of the Windows version
 MKDIR := $(shell which mkdir)
@@ -49,6 +50,8 @@ endif
 
 CFLAGS += -Werror -Wall -std=gnu11 -D_GNU_SOURCE -DVERSION="$(VERSION)" -I. -D_USE_MATH_DEFINES
 SDL_LDFLAGS := -lSDL2 -lGL
+QT_LDFLAGS := `pkg-config --libs Qt5Widgets`
+CXXFLAGS = -Werror -Wall -std=gnu++11 `pkg-config --cflags Qt5Widgets` -D_REENTRANT -fPIC -DQT_DEPRECATED_WARNINGS -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 ifeq ($(PLATFORM),windows32)
 CFLAGS += -IWindows
 LDFLAGS += -lmsvcrt -lSDL2main -Wl,/MANIFESTFILE:NUL
@@ -72,11 +75,14 @@ endif
 
 ifeq ($(CONF),debug)
 CFLAGS += -g
+CXXFLAGS += -g
 else ifeq ($(CONF), release)
 CFLAGS += -O3 -DNDEBUG
+CXXFLAGS += -O3 -DNDEBUG
 ifneq ($(PLATFORM),windows32)
 LDFLAGS += -flto
 CFLAGS += -flto
+CXXFLAGS += -flto
 endif
 else
 $(error Invalid value for CONF: $(CONF). Use "debug", "release" or "native_release")
@@ -93,17 +99,20 @@ TESTER_TARGET := $(BIN)/tester/sameboy_tester
 endif
 
 cocoa: $(BIN)/SameBoy.app
+qt: $(BIN)/Qt/SameBoy
 quicklook: $(BIN)/SameBoy.qlgenerator
 sdl: $(SDL_TARGET) $(BIN)/SDL/dmg_boot.bin $(BIN)/SDL/cgb_boot.bin $(BIN)/SDL/agb_boot.bin $(BIN)/SDL/LICENSE $(BIN)/SDL/registers.sym $(BIN)/SDL/background.bmp $(BIN)/SDL/Shaders
 bootroms: $(BIN)/BootROMs/agb_boot.bin $(BIN)/BootROMs/cgb_boot.bin $(BIN)/BootROMs/dmg_boot.bin
 tester: $(TESTER_TARGET) $(BIN)/tester/dmg_boot.bin $(BIN)/tester/cgb_boot.bin $(BIN)/tester/agb_boot.bin
-all: cocoa sdl tester libretro
+all: cocoa qt sdl tester libretro
 
 # Get a list of our source files and their respective object file targets
 
 CORE_SOURCES := $(shell ls Core/*.c)
 SDL_SOURCES := $(shell ls SDL/*.c)
 TESTER_SOURCES := $(shell ls Tester/*.c)
+QT_SOURCES := $(shell ls Qt/*.cpp)
+MOC_SOURCES := $(shell ls Qt/*.h)
 
 ifeq ($(PLATFORM),Darwin)
 COCOA_SOURCES := $(shell ls Cocoa/*.m) $(shell ls HexFiend/*.m)
@@ -118,6 +127,8 @@ CORE_OBJECTS := $(patsubst %,$(OBJ)/%.o,$(CORE_SOURCES))
 COCOA_OBJECTS := $(patsubst %,$(OBJ)/%.o,$(COCOA_SOURCES))
 QUICKLOOK_OBJECTS := $(patsubst %,$(OBJ)/%.o,$(QUICKLOOK_SOURCES))
 SDL_OBJECTS := $(patsubst %,$(OBJ)/%.o,$(SDL_SOURCES))
+QT_OBJECTS := $(patsubst %,$(OBJ)/%.o,$(QT_SOURCES))
+MOC_OBJECTS := $(patsubst %,$(OBJ)/%.o,$(MOC_SOURCES))
 TESTER_OBJECTS := $(patsubst %,$(OBJ)/%.o,$(TESTER_SOURCES))
 
 # Automatic dependency generation
@@ -148,6 +159,18 @@ $(OBJ)/Core/%.c.o: Core/%.c
 $(OBJ)/%.c.o: %.c
 	-@$(MKDIR) -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
+	
+$(OBJ)/Qt/%.h.cpp: Qt/%.h
+	-@$(MKDIR) -p $(dir $@)
+	moc $< > $@
+
+$(OBJ)/%.cpp.o: %.cpp
+	-@$(MKDIR) -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+	
+$(OBJ)/Qt/%.h.o: $(OBJ)/Qt/%.h.cpp
+	-@$(MKDIR) -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 	
 # HexFiend requires more flags
 $(OBJ)/HexFiend/%.m.o: HexFiend/%.m
@@ -190,6 +213,12 @@ endif
 $(BIN)/SameBoy.app/Contents/Resources/Base.lproj/%.nib: Cocoa/%.xib
 	ibtool --compile $@ $^
 	
+# Qt port
+
+$(BIN)/Qt/SameBoy: $(CORE_OBJECTS) $(QT_OBJECTS) $(MOC_OBJECTS)
+	-@$(MKDIR) -p $(dir $@)
+	$(CXX) $^ -o $@ $(LDFLAGS) $(QT_LDFLAGS)
+
 # Quick Look generator
 
 $(BIN)/SameBoy.qlgenerator: $(BIN)/SameBoy.qlgenerator/Contents/MacOS/SameBoyQL \
