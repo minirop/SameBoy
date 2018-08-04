@@ -25,6 +25,11 @@ GameBoyWorker::GameBoyWorker()
 	GB_load_boot_rom(&gb, "cgb_boot.bin");
 }
 
+GameBoyWorker::~GameBoyWorker()
+{
+	GB_free(&gb);
+}
+
 void GameBoyWorker::loadRom(QString filename)
 {
 	GB_load_rom(&gb, qPrintable(filename));
@@ -53,4 +58,9 @@ void GameBoyWorker::stop()
 void GameBoyWorker::keyEvent(GB_key_t index, bool pressed)
 {
 	GB_set_key_state(&gb, index, pressed);
+}
+
+void GameBoyWorker::reset()
+{
+	GB_reset(&gb);
 }

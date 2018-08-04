@@ -4,13 +4,13 @@
 #include <QWidget>
 #include <QThread>
 #include <QPixmap>
+#include <QMenu>
 
-extern "C" {
-#include <Core/joypad.h>
-}
+#include "settings.h"
 
-class Screen;
 class QPaintEvent;
+class QSignalMapper;
+class Screen;
 class GameBoyWorker;
 class MainWindow : public QWidget
 {
@@ -33,15 +33,22 @@ private slots:
 	void selectRom();
 	void updateFrame(QPixmap pixmap);
 	void stopEmulation();
+	void showContextMenu(const QPoint & pos);
+	void resizeWindow(int i);
 
 private:
 	void createMenu();
 	void handleKey(int key, bool pressed);
 	void loadRom(QString filename);
-	
+	void rebuildRecentRomsMenu();
+
 	QThread thread;
 	QPixmap frame;
 	GameBoyWorker * worker = nullptr;
+	QMenu contextMenu;
+	QMenu * recentRomsMenu = nullptr;
+	QSignalMapper * recentRomsMapper = nullptr;
+	Settings settings;
 };
 
 #endif

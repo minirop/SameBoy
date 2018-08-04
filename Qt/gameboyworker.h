@@ -14,6 +14,7 @@ class GameBoyWorker : public QObject
 
 public:
 	GameBoyWorker();
+	~GameBoyWorker();
 	void render(QPixmap pixmap);
 
 public slots:
@@ -21,6 +22,7 @@ public slots:
 	void run();
 	void stop();
 	void keyEvent(GB_key_t index, bool pressed);
+	void reset();
 
 signals:
 	void rendered(QPixmap pixmap);
