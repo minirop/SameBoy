@@ -1,4 +1,5 @@
 #include "settings.h"
+#include <QKeySequence>
 
 Settings::Settings()
 	: settings { "qameboy.ini", QSettings::IniFormat }
@@ -32,7 +33,7 @@ Settings::~Settings()
 		int keycode = keys[key];
 		QString path = "keys/" + getKeyName(key);
 
-		settings.setValue(path, keycode);
+		settings.setValue(path, QKeySequence(keycode).toString());
 	}
 }
 
@@ -57,7 +58,7 @@ int Settings::getKey(GB_key_t key)
 int Settings::loadKey(GB_key_t key)
 {
 	QString path = "keys/" + getKeyName(key);
-	int defaultValue = -1;
+	int defaultValue = Qt::Key_unknown;
 	switch (key)
 	{
 	case GB_KEY_RIGHT:
@@ -88,7 +89,13 @@ int Settings::loadKey(GB_key_t key)
 		break;
 	}
 
-	return settings.value(path, defaultValue).toInt();
+	QString value = settings.value(path).toString();
+	if (value.size())
+	{
+		defaultValue = QKeySequence::fromString(value)[0];
+	}
+	
+	return defaultValue;
 }
 
 QString Settings::getKeyName(GB_key_t key)
