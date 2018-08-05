@@ -16,9 +16,10 @@ GameBoyWorker::GameBoyWorker()
 	GB_init(&gb, GB_MODEL_CGB_E);
 	GB_set_pixels_output(&gb, pixel_buffer_1);
 	GB_set_vblank_callback(&gb, (GB_vblank_callback_t) [](GB_gameboy_t *) {
-		QImage image((const unsigned char*)pixel_buffer_1, SCREEN_WIDTH, SCREEN_HEIGHT, QImage::Format_RGB32);
+		QImage image(reinterpret_cast<const unsigned char*>(pixel_buffer_1), SCREEN_WIDTH, SCREEN_HEIGHT, QImage::Format_RGB32);
 		QPixmap pixmap = QPixmap::fromImage(image);
 		gbWorker->render(pixmap);
+		gbWorker->grabState();
 	});
 	GB_set_rgb_encode_callback(&gb, [](GB_gameboy_t *gb, uint8_t r, uint8_t g, uint8_t b) { return qRgb(r, g, b); });
 
@@ -63,4 +64,9 @@ void GameBoyWorker::keyEvent(GB_key_t index, bool pressed)
 void GameBoyWorker::reset()
 {
 	GB_reset(&gb);
+}
+
+void GameBoyWorker::grabState()
+{
+	emit gbState(&gb);
 }

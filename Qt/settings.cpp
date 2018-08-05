@@ -46,6 +46,11 @@ void Settings::addRecentRom(QString filename)
 {
 	recentRoms.removeOne(filename);
 	recentRoms.push_front(filename);
+
+	if (recentRoms.size() > 10)
+	{
+		recentRoms = recentRoms.mid(0, 10);
+	}
 }
 
 int Settings::getKey(GB_key_t key)

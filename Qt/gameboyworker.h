@@ -15,7 +15,6 @@ class GameBoyWorker : public QObject
 public:
 	GameBoyWorker();
 	~GameBoyWorker();
-	void render(QPixmap pixmap);
 
 public slots:
 	void loadRom(QString filename);
@@ -26,8 +25,12 @@ public slots:
 
 signals:
 	void rendered(QPixmap pixmap);
+	void gbState(GB_gameboy_t * gb);
 
 private:
+	void render(QPixmap pixmap);
+	void grabState();
+
 	GB_gameboy_t gb;
 	bool running = false;
 };

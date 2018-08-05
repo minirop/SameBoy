@@ -10,6 +10,9 @@
 #include <QFileDialog>
 #include <QSignalMapper>
 #include <QMessageBox>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
 
 using VoidActionFunc = void(QAction::*)();
 using VoidMapperFunc = void(QSignalMapper::*)();
@@ -19,6 +22,7 @@ MainWindow::MainWindow()
 	setWindowTitle("QameBoy");
 	resizeWindow(1);
 	setContextMenuPolicy(Qt::CustomContextMenu);
+	setAcceptDrops(true);
 
 	connect(this, &MainWindow::customContextMenuRequested, this, &MainWindow::showContextMenu);
 
@@ -30,8 +34,11 @@ MainWindow::MainWindow()
 	connect(&thread, &QThread::started, worker, &GameBoyWorker::run);
 	connect(&thread, &QThread::finished, worker, &QObject::deleteLater);
 	connect(worker, &GameBoyWorker::rendered, this, &MainWindow::updateFrame);
+	connect(worker, &GameBoyWorker::gbState, &vramViewer, &VramViewer::updateMemory);
 	connect(this, &MainWindow::keyEvent, worker, &GameBoyWorker::keyEvent);
 	connect(this, &MainWindow::start, worker, &GameBoyWorker::loadRom);
+
+	vramViewer.hide();
 }
 
 MainWindow::~MainWindow()
@@ -55,7 +62,14 @@ void MainWindow::createMenu()
 
 	contextMenu.addMenu("S&tate")->setEnabled(false);
 
-	contextMenu.addMenu("Ot&her")->setEnabled(false);
+	// OTHER
+	auto otherMenu = contextMenu.addMenu("Ot&her");
+	act = otherMenu->addAction("&VRAM Viewer");
+	connect(act, &QAction::triggered, [this]() {
+		this->vramViewer.show();
+	});
+
+
 	contextMenu.addMenu("So&und channel")->setEnabled(false);
 
 	auto windowSizeMapper = new QSignalMapper(this);
@@ -195,8 +209,6 @@ void MainWindow::loadRom(QString filename)
 		return;
 	}
 
-	stopEmulation();
-
 	if (filename.isEmpty()) return;
 
 	settings.addRecentRom(filename);
@@ -248,4 +260,33 @@ void MainWindow::rebuildRecentRomsMenu()
 		auto act = recentRomsMenu->addAction("Empty...");
 		act->setEnabled(false);
 	}
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent * event)
+{
+    if (event->mimeData()->hasUrls())
+        event->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent * event)
+{
+	QUrl file = event->mimeData()->urls().first();
+	if (file.isLocalFile())
+	{
+		if (file.fileName().endsWith(".gb") || file.fileName().endsWith(".gbc"))
+		{
+			QString filename = file.toString();
+			if (filename.startsWith("file://"))
+			{
+				filename = filename.mid(7);
+				filename = QUrl::fromPercentEncoding(filename.toLocal8Bit());
+				loadRom(filename);
+			}
+		}
+	}
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	vramViewer.close();
 }
