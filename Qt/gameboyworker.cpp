@@ -23,7 +23,8 @@ GameBoyWorker::GameBoyWorker()
 	});
 	GB_set_rgb_encode_callback(&gb, [](GB_gameboy_t *gb, uint8_t r, uint8_t g, uint8_t b) { return qRgb(r, g, b); });
 
-	GB_load_boot_rom(&gb, "cgb_boot.bin");
+    auto romFile = QString("%1/cgb_boot.bin").arg(QApplication::applicationDirPath());
+    GB_load_boot_rom(&gb, qPrintable(romFile));
 }
 
 GameBoyWorker::~GameBoyWorker()
