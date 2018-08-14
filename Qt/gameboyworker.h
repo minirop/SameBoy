@@ -10,29 +10,30 @@ extern "C" {
 
 class GameBoyWorker : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	GameBoyWorker();
-	~GameBoyWorker();
+    GameBoyWorker();
+    ~GameBoyWorker();
 
 public slots:
-	void loadRom(QString filename);
-	void run();
-	void stop();
-	void keyEvent(GB_key_t index, bool pressed);
-	void reset();
+    void loadRom(QString filename);
+    void run();
+    void stop();
+    void keyEvent(GB_key_t index, bool pressed);
+    void reset();
+    void setTurbo(bool enabled);
 
 signals:
-	void rendered(QPixmap pixmap);
-	void gbState(GB_gameboy_t * gb);
+    void rendered(QPixmap pixmap);
+    void gbState(GB_gameboy_t * gb);
 
 private:
-	void render(QPixmap pixmap);
-	void grabState();
+    void render(QPixmap pixmap);
+    void grabState();
 
-	GB_gameboy_t gb;
-	bool running = false;
+    GB_gameboy_t gb;
+    bool running = false;
 };
 
 #endif

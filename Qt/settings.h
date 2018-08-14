@@ -12,20 +12,20 @@ extern "C" {
 class Settings
 {
 public:
-	Settings();
-	~Settings();
+    Settings();
+    ~Settings();
 
-	QVector<QString> getRecentRoms();
-	void addRecentRom(QString filename);
+    QVector<QString> getRecentRoms();
+    void addRecentRom(QString filename);
 
-	int getKey(GB_key_t key);
-	int loadKey(GB_key_t key);
-	QString getKeyName(GB_key_t key);
+    int getKey(GB_key_t key);
+    int loadKey(GB_key_t key);
+    QString getKeyName(GB_key_t key);
 
 private:
-	QVector<QString> recentRoms;
-	QMap<GB_key_t, int> keys;
-	QSettings settings;
+    QVector<QString> recentRoms;
+    QMap<GB_key_t, int> keys;
+    QSettings settings;
 };
 
 #endif

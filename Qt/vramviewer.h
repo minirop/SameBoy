@@ -7,29 +7,30 @@ extern "C" {
 #include <Core/gb.h>
 }
 
-class QLabel;
-class QLineEdit;
+#include "details.h"
+
 class VramViewer : public QTabWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	VramViewer();
+    VramViewer(QWidget * parent = nullptr);
 
 public slots:
-	void updateMemory(GB_gameboy_t * gb);
+    void updateMemory(GB_gameboy_t * gb);
 
 protected:
     bool eventFilter(QObject * obj, QEvent * event);
 
 private:
-	QLabel * backgroundLabel;
-    QLabel * backgroundTileLabel;
+    GB_map_type_t mapType = GB_MAP_AUTO;
+    GB_tileset_type_t tilesetType = GB_TILESET_AUTO;
+
+    QLabel backgroundLabel;
+    QLabel backgroundTileLabel;
     QRect tileRect;
-    QLineEdit * xLineEdit;
-    QLineEdit * tileIdLineEdit;
-    QLineEdit * yLineEdit;
-    QLineEdit * attributeLineEdit;
+
+    Details * detailsBox = nullptr;
 };
 
 #endif

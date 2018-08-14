@@ -10,4 +10,7 @@ constexpr int BUFFER_HEIGHT = 256;
 constexpr int TILE_WIDTH = 8;
 constexpr int TILE_HEIGHT = 8;
 
+constexpr int TILE_COUNT_WIDTH = BUFFER_WIDTH / TILE_WIDTH;
+constexpr int TILE_COUNT_HEIGHT = BUFFER_HEIGHT / TILE_HEIGHT;
+
 #endif
