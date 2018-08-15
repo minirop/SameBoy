@@ -39,10 +39,15 @@ void GameBoyWorker::loadRom(QString filename)
 void GameBoyWorker::run()
 {
     running = true;
+    int counter = 0;
     while (running)
     {
         GB_run(&gb);
-        QApplication::processEvents();
+        if (++counter > 1000)
+        {
+            QApplication::processEvents();
+            counter = 0;
+        }
     }
 }
 
@@ -68,7 +73,7 @@ void GameBoyWorker::reset()
 
 void GameBoyWorker::setTurbo(bool enabled)
 {
-    GB_set_turbo_mode(&gb, enabled, enabled);
+    GB_set_turbo_mode(&gb, enabled, false);
 }
 
 void GameBoyWorker::grabState()
