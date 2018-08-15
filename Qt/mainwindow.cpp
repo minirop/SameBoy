@@ -52,12 +52,28 @@ void MainWindow::createMenu()
 {
     QAction * act = nullptr;
 
-    contextMenu.addAction("&Pause")->setEnabled(false);
-    contextMenu.addAction("&Load ROM...", this, SLOT(selectRom()));
-    contextMenu.addAction("&Enable sound")->setEnabled(false);
-    contextMenu.addAction("&Options...")->setEnabled(false);
-    contextMenu.addAction("&Cheat...")->setEnabled(false);
+    act = contextMenu.addAction("&Pause");
+    addAction(act);
+    act->setEnabled(false);
+
+    act = contextMenu.addAction("&Load ROM...", this, SLOT(selectRom()));
+    addAction(act);
+
+    act = contextMenu.addAction("&Enable sound");
+    addAction(act);
+    act->setEnabled(false);
+
+    act = contextMenu.addAction("&Options...");
+    act->setEnabled(false);
+    addAction(act);
+
+    act = contextMenu.addAction("&Cheat...");
+    act->setEnabled(false);
+    addAction(act);
+
     act = contextMenu.addAction("&Reset gameboy");
+    addAction(act);
+    act->setShortcut(QKeySequence("CTRL+R"));
     connect(act, &QAction::triggered, [this]() {
         worker->reset();
     });
@@ -67,6 +83,8 @@ void MainWindow::createMenu()
     // OTHER
     auto otherMenu = contextMenu.addMenu("Ot&her");
     act = otherMenu->addAction("&VRAM Viewer");
+    addAction(act);
+    act->setShortcut(QKeySequence("CTRL+V"));
     connect(act, &QAction::triggered, [this]() {
         this->vramViewer.show();
     });
@@ -82,6 +100,7 @@ void MainWindow::createMenu()
     auto windowSizeMenu = contextMenu.addMenu("&Window size");
 
     act = windowSizeMenu->addAction("&1x1");
+    addAction(act);
     act->setCheckable(true);
     act->setChecked(true);
     windowSizeActionGroup->addAction(act);
@@ -89,36 +108,42 @@ void MainWindow::createMenu()
     windowSizeMapper->setMapping(act, 1);
 
     act = windowSizeMenu->addAction("&2x2");
+    addAction(act);
     act->setCheckable(true);
     windowSizeActionGroup->addAction(act);
     connect(act, &QAction::triggered, windowSizeMapper, static_cast<VoidMapperFunc>(&QSignalMapper::map));
     windowSizeMapper->setMapping(act, 2);
 
     act = windowSizeMenu->addAction("&3x3");
+    addAction(act);
     act->setCheckable(true);
     windowSizeActionGroup->addAction(act);
     connect(act, &QAction::triggered, windowSizeMapper, static_cast<VoidMapperFunc>(&QSignalMapper::map));
     windowSizeMapper->setMapping(act, 3);
 
     act = windowSizeMenu->addAction("&4x4");
+    addAction(act);
     act->setCheckable(true);
     windowSizeActionGroup->addAction(act);
     connect(act, &QAction::triggered, windowSizeMapper, static_cast<VoidMapperFunc>(&QSignalMapper::map));
     windowSizeMapper->setMapping(act, 4);
 
     act = windowSizeMenu->addAction("&5x5");
+    addAction(act);
     act->setCheckable(true);
     windowSizeActionGroup->addAction(act);
     connect(act, &QAction::triggered, windowSizeMapper, static_cast<VoidMapperFunc>(&QSignalMapper::map));
     windowSizeMapper->setMapping(act, 5);
 
     act = windowSizeMenu->addAction("&6x6");
+    addAction(act);
     act->setCheckable(true);
     windowSizeActionGroup->addAction(act);
     connect(act, &QAction::triggered, windowSizeMapper, static_cast<VoidMapperFunc>(&QSignalMapper::map));
     windowSizeMapper->setMapping(act, 6);
 
     act = windowSizeMenu->addAction("&Full screen");
+    addAction(act);
     act->setCheckable(true);
     act->setEnabled(false);
     windowSizeActionGroup->addAction(act);
@@ -126,6 +151,7 @@ void MainWindow::createMenu()
     windowSizeMapper->setMapping(act, 7);
 
     act = windowSizeMenu->addAction("F&ullscreen stretch");
+    addAction(act);
     act->setCheckable(true);
     act->setEnabled(false);
     windowSizeActionGroup->addAction(act);
@@ -141,19 +167,22 @@ void MainWindow::createMenu()
     recentRomsMenu = contextMenu.addMenu("Rece&nt ROMs");
     rebuildRecentRomsMenu();
 
-    contextMenu.addAction("E&xit", this, SLOT(close()));
+    act = contextMenu.addAction("E&xit", this, SLOT(close()), QKeySequence("CTRL+Q"));
+    addAction(act);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (!event->isAutoRepeat())
         handleKey(event->key(), true);
+    event->ignore();
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event)
 {
     if (!event->isAutoRepeat())
         handleKey(event->key(), false);
+    event->ignore();
 }
 
 void MainWindow::paintEvent(QPaintEvent * event)
@@ -170,35 +199,22 @@ void MainWindow::updateFrame(QPixmap pixmap)
 
 void MainWindow::handleKey(int key, bool pressed)
 {
-    switch (key)
+    auto gbKey = settings.getGbKey(key);
+    if (gbKey != GB_KEY_MAX)
     {
-    case Qt::Key_Return:
         emit keyEvent(GB_KEY_START, pressed);
-        break;
-    case Qt::Key_Backspace:
-        emit keyEvent(GB_KEY_SELECT, pressed);
-        break;
-    case Qt::Key_Up:
-        emit keyEvent(GB_KEY_UP, pressed);
-        break;
-    case Qt::Key_Down:
-        emit keyEvent(GB_KEY_DOWN, pressed);
-        break;
-    case Qt::Key_Left:
-        emit keyEvent(GB_KEY_LEFT, pressed);
-        break;
-    case Qt::Key_Right:
-        emit keyEvent(GB_KEY_RIGHT, pressed);
-        break;
-    case Qt::Key_Space:
-        emit keyEvent(GB_KEY_A, pressed);
-        break;
-    case Qt::Key_D:
-        emit keyEvent(GB_KEY_B, pressed);
-        break;
-    case Qt::Key_M:
-        emit setTurbo(pressed);
-        break;
+    }
+    else
+    {
+        auto action = settings.getAction(key);
+        switch (action)
+        {
+        case Settings::Action::Turbo:
+            emit setTurbo(pressed);
+            break;
+        case Settings::Action::Unknown:
+            break;
+        }
     }
 }
 
@@ -258,6 +274,7 @@ void MainWindow::rebuildRecentRomsMenu()
         for (auto & filename : recentRoms)
         {
             auto act = recentRomsMenu->addAction(filename);
+            addAction(act);
             connect(act, &QAction::triggered, recentRomsMapper, static_cast<VoidMapperFunc>(&QSignalMapper::map));
             recentRomsMapper->setMapping(act, filename);
         }

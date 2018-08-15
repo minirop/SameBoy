@@ -1,5 +1,6 @@
 #include "settings.h"
 #include <QKeySequence>
+#include <type_traits>
 
 Settings::Settings()
     : settings { "qameboy.ini", QSettings::IniFormat }
@@ -14,10 +15,12 @@ Settings::Settings()
         recentRoms.push_back(filename);
     }
 
-    for (GB_key_t key = GB_KEY_RIGHT; key < GB_KEY_MAX; (*reinterpret_cast<int*>(&key))++)
+    for (int key = GB_KEY_RIGHT; key < GB_KEY_MAX; key++)
     {
-        keys[key] = loadKey(key);
+        gbKeys[static_cast<GB_key_t>(key)] = loadGbKey(static_cast<GB_key_t>(key));
     }
+
+    actionKeys[Action::Turbo] = Qt::Key_M;
 }
 
 Settings::~Settings()
@@ -28,10 +31,10 @@ Settings::~Settings()
         settings.setValue(QString("recent/rom_%1").arg(i), filename);
     }
 
-    for (GB_key_t key = GB_KEY_RIGHT; key < GB_KEY_MAX; (*reinterpret_cast<int*>(&key))++)
+    for (int key = GB_KEY_RIGHT; key < GB_KEY_MAX; key++)
     {
-        int keycode = keys[key];
-        QString path = "keys/" + getKeyName(key);
+        int keycode = gbKeys[static_cast<GB_key_t>(key)];
+        QString path = "keys/" + getGbKeyName(static_cast<GB_key_t>(key));
 
         settings.setValue(path, QKeySequence(keycode).toString());
     }
@@ -53,16 +56,23 @@ void Settings::addRecentRom(QString filename)
     }
 }
 
-int Settings::getKey(GB_key_t key)
+int Settings::getGbKey(GB_key_t key)
 {
-    if (keys.contains(key))
-        return keys[key];
+    if (gbKeys.contains(key))
+    {
+        return gbKeys[key];
+    }
     return Qt::Key_unknown;
 }
 
-int Settings::loadKey(GB_key_t key)
+GB_key_t Settings::getGbKey(int key)
 {
-    QString path = "keys/" + getKeyName(key);
+    return GB_KEY_MAX;
+}
+
+int Settings::loadGbKey(GB_key_t key)
+{
+    QString path = "keys/" + getGbKeyName(key);
     int defaultValue = Qt::Key_unknown;
     switch (key)
     {
@@ -103,7 +113,7 @@ int Settings::loadKey(GB_key_t key)
     return defaultValue;
 }
 
-QString Settings::getKeyName(GB_key_t key)
+QString Settings::getGbKeyName(GB_key_t key)
 {
     switch (key)
     {
@@ -128,4 +138,21 @@ QString Settings::getKeyName(GB_key_t key)
     }
 
     return {};
+}
+
+int Settings::getActionKey(Settings::Action action)
+{
+    switch (action)
+    {
+    case Action::Turbo:
+        return Qt::Key_M;
+    case Action::Unknown:
+        break;
+    }
+    return Qt::Key_unknown;
+}
+
+Settings::Action Settings::getAction(int key)
+{
+    return actionKeys.key(key, Action::Unknown);
 }

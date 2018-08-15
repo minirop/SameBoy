@@ -12,19 +12,28 @@ extern "C" {
 class Settings
 {
 public:
+    enum class Action {
+        Turbo,
+        Unknown
+    };
+
     Settings();
     ~Settings();
 
     QVector<QString> getRecentRoms();
     void addRecentRom(QString filename);
 
-    int getKey(GB_key_t key);
-    int loadKey(GB_key_t key);
-    QString getKeyName(GB_key_t key);
+    int getGbKey(GB_key_t key);
+    GB_key_t getGbKey(int key);
+    int loadGbKey(GB_key_t key);
+    QString getGbKeyName(GB_key_t key);
+    int getActionKey(Action action);
+    Action getAction(int key);
 
 private:
     QVector<QString> recentRoms;
-    QMap<GB_key_t, int> keys;
+    QMap<GB_key_t, int> gbKeys;
+    QMap<Action, int> actionKeys;
     QSettings settings;
 };
 
