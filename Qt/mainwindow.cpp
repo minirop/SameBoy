@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "gameboyworker.h"
+#include "vramviewer.h"
+#include "memoryviewer.h"
 #include "globals.h"
 
 #include <QApplication>
@@ -18,7 +20,6 @@ using VoidActionFunc = void(QAction::*)();
 using VoidMapperFunc = void(QSignalMapper::*)();
 
 MainWindow::MainWindow()
-    : vramViewer(this)
 {
     setWindowTitle("QameBoy");
     resizeWindow(1);
@@ -31,16 +32,22 @@ MainWindow::MainWindow()
 
     worker = new GameBoyWorker;
     worker->moveToThread(&thread);
+
+    memoryViewer = new MemoryViewer(this);
+    vramViewer = new VramViewer(this);
+
     connect(qApp, &QApplication::lastWindowClosed, worker, &GameBoyWorker::stop);
     connect(&thread, &QThread::started, worker, &GameBoyWorker::run);
     connect(&thread, &QThread::finished, worker, &QObject::deleteLater);
     connect(worker, &GameBoyWorker::rendered, this, &MainWindow::updateFrame);
-    connect(worker, &GameBoyWorker::gbState, &vramViewer, &VramViewer::updateMemory);
+    connect(worker, &GameBoyWorker::gbState, memoryViewer, &MemoryViewer::updateMemory);
+    connect(worker, &GameBoyWorker::gbState, vramViewer, &VramViewer::updateMemory);
     connect(this, &MainWindow::keyEvent, worker, &GameBoyWorker::keyEvent);
     connect(this, &MainWindow::setTurbo, worker, &GameBoyWorker::setTurbo);
     connect(this, &MainWindow::start, worker, &GameBoyWorker::loadRom);
 
-    vramViewer.hide();
+    memoryViewer->hide();
+    vramViewer->hide();
 }
 
 MainWindow::~MainWindow()
@@ -82,11 +89,17 @@ void MainWindow::createMenu()
 
     // OTHER
     auto otherMenu = contextMenu.addMenu("Ot&her");
+    act = otherMenu->addAction("&Memory Viewer");
+    addAction(act);
+    act->setShortcut(QKeySequence("CTRL+C"));
+    connect(act, &QAction::triggered, [this]() {
+        this->memoryViewer->show();
+    });
     act = otherMenu->addAction("&VRAM Viewer");
     addAction(act);
     act->setShortcut(QKeySequence("CTRL+V"));
     connect(act, &QAction::triggered, [this]() {
-        this->vramViewer.show();
+        this->vramViewer->show();
     });
 
 
@@ -312,5 +325,6 @@ void MainWindow::dropEvent(QDropEvent * event)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    vramViewer.close();
+    memoryViewer->close();
+    vramViewer->close();
 }
