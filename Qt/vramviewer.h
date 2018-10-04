@@ -3,8 +3,10 @@
 
 #include <QTabWidget>
 
+#define GB_INTERNAL
+
 extern "C" {
-#include <Core/gb.h>
+#include "Core/gb.h"
 }
 
 #include "details.h"
