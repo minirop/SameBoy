@@ -7,7 +7,6 @@
 #include <QMenu>
 
 #include "settings.h"
-#include "vramviewer.h"
 
 class QPaintEvent;
 class QDragEnterEvent;
@@ -15,6 +14,8 @@ class QDropEvent;
 class QSignalMapper;
 class Screen;
 class GameBoyWorker;
+class VramViewer;
+class MemoryViewer;
 class MainWindow : public QWidget
 {
     Q_OBJECT
@@ -56,7 +57,8 @@ private:
     QMenu * recentRomsMenu = nullptr;
     QSignalMapper * recentRomsMapper = nullptr;
     Settings settings;
-    VramViewer vramViewer;
+    MemoryViewer *memoryViewer;
+    VramViewer *vramViewer;
 };
 
 #endif

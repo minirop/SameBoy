@@ -5,7 +5,8 @@
 #include <QPixmap>
 
 extern "C" {
-#include <Core/gb.h>
+#define GB_INTERNAL
+#include "Core/gb.h"
 }
 
 class GameBoyWorker : public QObject

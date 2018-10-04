@@ -51,7 +51,7 @@ endif
 CFLAGS += -Werror -Wall -std=gnu11 -D_GNU_SOURCE -DVERSION="$(VERSION)" -I. -D_USE_MATH_DEFINES
 SDL_LDFLAGS := -lSDL2 -lGL
 QT_LDFLAGS := `pkg-config --libs Qt5Widgets`
-CXXFLAGS = -Werror -Wall -std=gnu++11 `pkg-config --cflags Qt5Widgets` -D_REENTRANT -fPIC -DQT_DEPRECATED_WARNINGS -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
+CXXFLAGS = -Werror -Wall -std=gnu++11 `pkg-config --cflags Qt5Widgets` -D_REENTRANT -fPIC -DQT_DEPRECATED_WARNINGS -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB -I$(CURDIR)
 ifeq ($(PLATFORM),windows32)
 CFLAGS += -IWindows
 LDFLAGS += -lmsvcrt -lSDL2main -Wl,/MANIFESTFILE:NUL
