@@ -54,6 +54,30 @@ void VramViewer::updateMemory(GB_gameboy_t * gb)
     p.setCompositionMode(QPainter::CompositionMode_Difference);
     p.setPen(QPen(Qt::white, 2));
     p.drawRect(x, y, SCREEN_WIDTH, SCREEN_HEIGHT);
+    if (x < 0)
+    {
+        p.drawRect(x + BUFFER_WIDTH, y, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+    else if (x + SCREEN_WIDTH > BUFFER_WIDTH)
+    {
+        p.drawRect(x - BUFFER_WIDTH, y, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+    if (y < 0)
+    {
+        p.drawRect(x, y + BUFFER_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+    else if (y + SCREEN_HEIGHT > BUFFER_HEIGHT)
+    {
+        p.drawRect(x, y - BUFFER_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+    if (x < 0 && y < 0)
+    {
+        p.drawRect(x + BUFFER_WIDTH, y + BUFFER_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+    else if (x + SCREEN_WIDTH > BUFFER_WIDTH && y + SCREEN_HEIGHT > BUFFER_HEIGHT)
+    {
+        p.drawRect(x - BUFFER_WIDTH, y - BUFFER_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
     p.end();
     backgroundLabel.setPixmap(pixmap);
 
