@@ -31,8 +31,8 @@ BOOTROMS_DIR ?= $(BIN)/BootROMs
 
 # Set tools
 
-CC := clang
-CXX := clang++
+CC := clang-8
+CXX := clang++-8
 ifeq ($(PLATFORM),windows32)
 # To force use of the Unix version instead of the Windows version
 MKDIR := $(shell which mkdir)
@@ -50,8 +50,8 @@ endif
 
 CFLAGS += -Werror -Wall -std=gnu11 -D_GNU_SOURCE -DVERSION="$(VERSION)" -I. -D_USE_MATH_DEFINES
 SDL_LDFLAGS := -lSDL2 -lGL
-QT_LDFLAGS := `pkg-config --libs Qt5Widgets`
-CXXFLAGS = -Werror -Wall -std=gnu++11 `pkg-config --cflags Qt5Widgets` -D_REENTRANT -fPIC -DQT_DEPRECATED_WARNINGS -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
+QT_LDFLAGS := `pkg-config --libs Qt5Widgets Qt5Multimedia`
+CXXFLAGS = -Werror -Wall -std=gnu++11 `pkg-config --cflags Qt5Widgets Qt5Multimedia` -D_REENTRANT -fPIC -DQT_DEPRECATED_WARNINGS -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 ifeq ($(PLATFORM),windows32)
 CFLAGS += -IWindows
 LDFLAGS += -lmsvcrt -lSDL2main -Wl,/MANIFESTFILE:NUL

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QPixmap>
+#include <QAudioOutput>
 
 extern "C" {
 #include <Core/gb.h>
@@ -33,6 +34,7 @@ private:
     void grabState();
 
     GB_gameboy_t gb;
+    QAudioOutput * audio = nullptr;
     bool running = false;
 };
 

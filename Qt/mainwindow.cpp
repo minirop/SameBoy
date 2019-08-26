@@ -202,7 +202,7 @@ void MainWindow::handleKey(int key, bool pressed)
     auto gbKey = settings.getGbKey(key);
     if (gbKey != GB_KEY_MAX)
     {
-        emit keyEvent(GB_KEY_START, pressed);
+        emit keyEvent(gbKey, pressed);
     }
     else
     {

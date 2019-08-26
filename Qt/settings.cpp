@@ -67,7 +67,7 @@ int Settings::getGbKey(GB_key_t key)
 
 GB_key_t Settings::getGbKey(int key)
 {
-    return GB_KEY_MAX;
+    return gbKeys.key(key, GB_KEY_MAX);
 }
 
 int Settings::loadGbKey(GB_key_t key)

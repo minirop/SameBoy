@@ -10,17 +10,27 @@ static uint32_t pixel_buffer_1[SCREEN_WIDTH*SCREEN_HEIGHT];
 
 GameBoyWorker::GameBoyWorker()
 {
+    QAudioFormat format;
+    // Set up the format, eg.
+    format.setSampleRate(2048);
+    format.setChannelCount(2);
+    format.setSampleSize(8);
+    format.setCodec("audio/pcm");
+    format.setSampleType(QAudioFormat::SignedInt);
+
+    audio = new QAudioOutput(format, this);
+
     GB_init(&gb, GB_MODEL_CGB_E);
     GB_set_pixels_output(&gb, pixel_buffer_1);
     GB_set_user_data(&gb, this);
-    GB_set_vblank_callback(&gb, (GB_vblank_callback_t) [](GB_gameboy_t *  gb) {
+    GB_set_vblank_callback(&gb, [](GB_gameboy_t *  gb) {
         auto gbWorker = static_cast<GameBoyWorker*>(GB_get_user_data(gb));
         QImage image(reinterpret_cast<const unsigned char*>(pixel_buffer_1), SCREEN_WIDTH, SCREEN_HEIGHT, QImage::Format_RGB32);
         QPixmap pixmap = QPixmap::fromImage(image);
         gbWorker->render(pixmap);
         gbWorker->grabState();
     });
-    GB_set_rgb_encode_callback(&gb, [](GB_gameboy_t *gb, uint8_t r, uint8_t g, uint8_t b) { return qRgb(r, g, b); });
+    GB_set_rgb_encode_callback(&gb, [](GB_gameboy_t *, uint8_t r, uint8_t g, uint8_t b) { return qRgb(r, g, b); });
 
     auto romFile = QString("%1/cgb_boot.bin").arg(QApplication::applicationDirPath());
     GB_load_boot_rom(&gb, qPrintable(romFile));
